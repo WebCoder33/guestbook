@@ -21,7 +21,7 @@ class ConferenceController extends AbstractController
         /*return $this->render('conference/index.html.twig', [
             'controller_name' => 'ConferenceController',
         ]);*/
-		$request->
+
         return new Response(<<<EOF
 
 			<html>
