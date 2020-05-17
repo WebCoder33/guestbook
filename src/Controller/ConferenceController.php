@@ -5,14 +5,15 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
+use App\Repository\ConferenceRepository;
+use Twig\Environment;
 
 class ConferenceController extends AbstractController
 {
     /**
      * @Route("/", name="homepage")
      */
-    public function index(Request $request)
+    public function index(Environment $twig, ConferenceRepository $conferenceRepository)
     {
     	$greet = '';
     	if ($name = $request->query->get('hello')) {
@@ -22,14 +23,9 @@ class ConferenceController extends AbstractController
             'controller_name' => 'ConferenceController',
         ]);*/
 
-        return new Response(<<<EOF
-
-			<html>
-				<body>
-					$greet
-					<img src="/images/uc.png" />
-				</body>
-			</html>
-		EOF);
+        return new Response($twig->render('conference/index.html.twig', [
+        	'conferences' => $conferenceRepository->findAll(),
+		]));
+        
     }
 }
