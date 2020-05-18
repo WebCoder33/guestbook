@@ -9,3 +9,7 @@ services:
       POSTGRES DB: main
     ports:
     - 5432
+
+  redis:
+    image: redis:5-alpine
+    ports: [6379]
