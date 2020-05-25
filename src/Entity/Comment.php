@@ -139,4 +139,6 @@ class Comment
 		// TODO: Implement __toString() method.
 		return (string) $this->getEmail();
 	}
+
+
 }
