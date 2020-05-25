@@ -57,18 +57,19 @@ class ConferenceController extends AbstractController
 	}
 
 
-	/**
-	 * @Route("/conference/{slug}", name="conference")
-	 * @param Request $request
-	 * @param Conference $conference
-	 * @param CommentRepository $commentRepository
-	 * @param ConferenceRepository $conferenceRepository
-	 * @param string $photoDir
-	 * @return Response
-	 * @throws \Twig\Error\LoaderError
-	 * @throws \Twig\Error\RuntimeError
-	 * @throws \Twig\Error\SyntaxError
-	 */
+    /**
+     * @Route("/conference/{slug}", name="conference")
+     * @param Request $request
+     * @param Conference $conference
+     * @param CommentRepository $commentRepository
+     * @param ConferenceRepository $conferenceRepository
+     * @param SpamChecker $spamChecker
+     * @param string $photoDir
+     * @return Response
+     * @throws \Twig\Error\LoaderError
+     * @throws \Twig\Error\RuntimeError
+     * @throws \Twig\Error\SyntaxError
+     */
 	public function show(Request $request, Conference $conference, CommentRepository $commentRepository, ConferenceRepository $conferenceRepository, string $photoDir)
 	{
 		$comment = new Comment();
