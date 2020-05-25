@@ -12,15 +12,33 @@ use App\Entity\Conference;
 use App\Repository\CommentRepository;
 use App\Entity\Comment;
 use App\Form\CommentFormType;
+use Doctrine\ORM\EntityManagerInterface;
 
-
+/**
+ * Class ConferenceController
+ * @package App\Controller
+ */
 class ConferenceController extends AbstractController
 {
+	/**
+	 * @var Environment
+	 */
 	private $twig;
+	/**
+	 * @var EntityManagerInterface
+	 */
+	private $entityManager;
 
-	public function __construct(Environment $twig)
+	/**
+	 * ConferenceController constructor.
+	 * @param Environment $twig
+	 * @param EntityManagerInterface $entityManager
+	 */
+	public function __construct(Environment $twig, EntityManagerInterface
+	$entityManager)
 	{
 		$this->twig = $twig;
+		$this->entityManager = $entityManager;
 	}
 
 	/**
@@ -54,6 +72,14 @@ class ConferenceController extends AbstractController
 	{
 		$comment = new Comment();
 		$form = $this->createForm(CommentFormType::class, $comment);
+		$form->handleRequest($request);
+		if ($form->isSubmitted() && $form->isValid()) {
+			$comment->setConference($conference);
+			$this->entityManager->persist($comment);
+			$this->entityManager->flush();
+			return $this->redirectToRoute(
+				'conference', ['slug' => $conference->getSlug()]);
+		}
 
 		$offset = max(0, $request->query->getInt('offset', 0));
 		$paginator = $commentRepository->getCommentPaginator($conference, $offset);
