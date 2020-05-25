@@ -11,3 +11,4 @@
 /.idea/
 /symfony.lock
 /composer.lock
+/public/uploads/
