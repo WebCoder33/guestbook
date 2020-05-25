@@ -13,6 +13,7 @@ use App\Repository\CommentRepository;
 use App\Entity\Comment;
 use App\Form\CommentFormType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 /**
  * Class ConferenceController
@@ -34,8 +35,7 @@ class ConferenceController extends AbstractController
 	 * @param Environment $twig
 	 * @param EntityManagerInterface $entityManager
 	 */
-	public function __construct(Environment $twig, EntityManagerInterface
-	$entityManager)
+	public function __construct(Environment $twig, EntityManagerInterface $entityManager)
 	{
 		$this->twig = $twig;
 		$this->entityManager = $entityManager;
@@ -63,18 +63,28 @@ class ConferenceController extends AbstractController
 	 * @param Conference $conference
 	 * @param CommentRepository $commentRepository
 	 * @param ConferenceRepository $conferenceRepository
+	 * @param string $photoDir
 	 * @return Response
 	 * @throws \Twig\Error\LoaderError
 	 * @throws \Twig\Error\RuntimeError
 	 * @throws \Twig\Error\SyntaxError
 	 */
-	public function show(Request $request, Conference $conference, CommentRepository $commentRepository, ConferenceRepository $conferenceRepository)
+	public function show(Request $request, Conference $conference, CommentRepository $commentRepository, ConferenceRepository $conferenceRepository, string $photoDir)
 	{
 		$comment = new Comment();
 		$form = $this->createForm(CommentFormType::class, $comment);
 		$form->handleRequest($request);
 		if ($form->isSubmitted() && $form->isValid()) {
 			$comment->setConference($conference);
+			if ($photo = $form['photo']->getData()) {
+				$filename = bin2hex(random_bytes(6)) . '.' . $photo->guessExtension();
+				try {
+					$photo->move($photoDir, $filename);
+				} catch (FileException $e) {
+					// unable to upload the photo, give up
+				}
+				$comment->setPhotoFilename($filename);
+			}
 			$this->entityManager->persist($comment);
 			$this->entityManager->flush();
 			return $this->redirectToRoute(
