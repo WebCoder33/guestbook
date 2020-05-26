@@ -14,6 +14,9 @@ use App\Entity\Comment;
 use App\Form\CommentFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use App\Message\CommentMessage;
+use Symfony\Component\Messenger\MessageBusInterface;
+
 
 /**
  * Class ConferenceController
@@ -30,15 +33,22 @@ class ConferenceController extends AbstractController
 	 */
 	private $entityManager;
 
-	/**
-	 * ConferenceController constructor.
-	 * @param Environment $twig
-	 * @param EntityManagerInterface $entityManager
-	 */
-	public function __construct(Environment $twig, EntityManagerInterface $entityManager)
+    /**
+     * @var MessageBusInterface
+     */
+    private $bus;
+
+    /**
+     * ConferenceController constructor.
+     * @param Environment $twig
+     * @param EntityManagerInterface $entityManager
+     * @param MessageBusInterface $bus
+     */
+	public function __construct(Environment $twig, EntityManagerInterface $entityManager, MessageBusInterface $bus)
 	{
 		$this->twig = $twig;
 		$this->entityManager = $entityManager;
+        $this->bus = $bus;
 	}
 
 	/**
@@ -62,15 +72,14 @@ class ConferenceController extends AbstractController
      * @param Request $request
      * @param Conference $conference
      * @param CommentRepository $commentRepository
-     * @param ConferenceRepository $conferenceRepository
-     * @param SpamChecker $spamChecker
      * @param string $photoDir
+     * @param ConferenceRepository $conferenceRepository
      * @return Response
      * @throws \Twig\Error\LoaderError
      * @throws \Twig\Error\RuntimeError
      * @throws \Twig\Error\SyntaxError
      */
-	public function show(Request $request, Conference $conference, CommentRepository $commentRepository, ConferenceRepository $conferenceRepository, string $photoDir)
+    public function show(Request $request, Conference $conference, CommentRepository $commentRepository, string $photoDir, ConferenceRepository $conferenceRepository)
 	{
 		$comment = new Comment();
 		$form = $this->createForm(CommentFormType::class, $comment);
@@ -88,6 +97,14 @@ class ConferenceController extends AbstractController
 			}
 			$this->entityManager->persist($comment);
 			$this->entityManager->flush();
+
+            $context = [
+                'user_ip' => $request->getClientIp(),
+                'referrer' => $request->headers->get('referer'),
+                'permalink' => $request->getUri(),
+            ];
+            $this->bus->dispatch(new CommentMessage($comment->getId(), $context));
+
 			return $this->redirectToRoute(
 				'conference', ['slug' => $conference->getSlug()]);
 		}
