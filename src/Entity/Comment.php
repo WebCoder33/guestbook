@@ -53,13 +53,18 @@ class Comment
      */
     private $photoFilename;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=false)
+     */
+    private $state = 'submitted';
+
 	/**
 	 * @ORM\PrePersist
 	 */
 	public function setCreatedAtValue()
-	{
-		$this->createdAt = new \DateTime();
-	}
+                  	{
+                  		$this->createdAt = new \DateTime();
+                  	}
 
     public function getId(): ?int
     {
@@ -143,6 +148,18 @@ class Comment
 		// TODO: Implement __toString() method.
 		return (string) $this->getEmail();
 	}
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(?string $state): self
+    {
+        $this->state = $state;
+
+        return $this;
+    }
 
 
 }
