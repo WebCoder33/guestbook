@@ -13,17 +13,19 @@ class CommentMessageHandler implements MessageHandlerInterface
     private $spamChecker;
     private $entityManager;
     private $commentRepository;
+
     public function __construct
-        (
-            EntityManagerInterface $entityManager,
-            SpamChecker $spamChecker,
-            CommentRepository $commentRepository
-        )
+    (
+        EntityManagerInterface $entityManager,
+        SpamChecker $spamChecker,
+        CommentRepository $commentRepository
+    )
     {
         $this->entityManager = $entityManager;
         $this->spamChecker = $spamChecker;
         $this->commentRepository = $commentRepository;
     }
+
     public function __invoke(CommentMessage $message)
     {
         $comment = $this->commentRepository->find($message->getId());
